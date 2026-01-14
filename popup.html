@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { margin: 0; padding: 0; }
+        #popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .popup-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 620px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        h2 {
+            margin-top: 0;
+            color: #0078d4;
+            text-align: center;
+        }
+        #closeBtn {
+            background: #0078d4;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: block;
+            margin: 20px auto 0;
+        }
+        #closeBtn:hover {
+            background: #005a9e;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="popup-overlay">
+        <div class="popup-content">
+            <h2>Important Message</h2>
+            
+            <iframe src="https://app.colossyan.com/embed/5b432f5b-bb15-4751-93ae-bef1f68863ad" 
+                    width="560" 
+                    height="315" 
+                    frameborder="0" 
+                    allow="autoplay; fullscreen; picture-in-picture" 
+                    allowfullscreen
+                    style="border-radius: 4px; display: block;">
+            </iframe>
+            
+            <button id="closeBtn">Close</button>
+        </div>
+    </div>
+
+    <script>
+        const CAMPAIGN_START = new Date('2025-01-14');
+        const CAMPAIGN_DAYS = 5;
+        const STORAGE_KEY = 'sp_popup_lastShown';
+        
+        function shouldShowPopup() {
+            const now = new Date();
+            const daysSinceStart = Math.floor((now - CAMPAIGN_START) / (1000 * 60 * 60 * 24));
+            
+            if (daysSinceStart < 0 || daysSinceStart >= CAMPAIGN_DAYS) {
+                return false;
+            }
+            
+            const lastShown = localStorage.getItem(STORAGE_KEY);
+            const today = now.toDateString();
+            
+            return lastShown !== today;
+        }
+        
+        const overlay = document.getElementById('popup-overlay');
+        
+        if (!shouldShowPopup()) {
+            overlay.classList.add('hidden');
+            // Tell parent window to hide iframe
+            window.parent.postMessage('hidePopup', '*');
+        }
+        
+        document.getElementById('closeBtn').addEventListener('click', function() {
+            localStorage.setItem(STORAGE_KEY, new Date().toDateString());
+            overlay.classList.add('hidden');
+            // Tell parent window to hide iframe
+            window.parent.postMessage('hidePopup', '*');
+        });
+        
+        // Close when clicking overlay
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                localStorage.setItem(STORAGE_KEY, new Date().toDateString());
+                overlay.classList.add('hidden');
+                window.parent.postMessage('hidePopup', '*');
+            }
+        });
+    </script>
+</body>
+</html>
