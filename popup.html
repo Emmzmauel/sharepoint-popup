@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             margin: 0; 
             padding: 0; 
-            background: transparent;
+            overflow: hidden;
         }
         #popup-overlay {
             position: fixed;
@@ -14,34 +15,49 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.8);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10000;
+            z-index: 999999;
         }
         .popup-content {
             background: white;
             padding: 30px;
-            border-radius: 8px;
+            border-radius: 12px;
             max-width: 620px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
         h2 {
-            margin-top: 0;
+            margin: 0 0 20px 0;
             color: #0078d4;
             text-align: center;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
         }
         #closeBtn {
             background: #0078d4;
             color: white;
             border: none;
-            padding: 10px 30px;
-            border-radius: 4px;
+            padding: 12px 40px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 15px;
             display: block;
             margin: 20px auto 0;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-weight: 600;
+            transition: background 0.2s;
         }
         #closeBtn:hover {
             background: #005a9e;
@@ -50,7 +66,7 @@
     </style>
 </head>
 <body>
-    <div id="popup-overlay" class="hidden">
+    <div id="popup-overlay">
         <div class="popup-content">
             <h2>Important Message</h2>
             
@@ -60,10 +76,10 @@
                     frameborder="0" 
                     allow="autoplay; fullscreen; picture-in-picture" 
                     allowfullscreen
-                    style="border-radius: 4px; display: block;">
+                    style="border-radius: 8px; display: block; border: none;">
             </iframe>
             
-            <button id="closeBtn">Close</button>
+            <button id="closeBtn">Got it</button>
         </div>
     </div>
 
@@ -88,23 +104,26 @@
         
         const overlay = document.getElementById('popup-overlay');
         
-        if (shouldShowPopup()) {
-            // Show popup after small delay
-            setTimeout(() => {
-                overlay.classList.remove('hidden');
-            }, 500);
+        // Show or hide popup based on conditions
+        if (!shouldShowPopup()) {
+            overlay.classList.add('hidden');
+            // Tell parent to remove iframe
+            window.parent.postMessage('removePopup', '*');
         }
         
+        // Close button
         document.getElementById('closeBtn').addEventListener('click', function() {
             localStorage.setItem(STORAGE_KEY, new Date().toDateString());
             overlay.classList.add('hidden');
+            window.parent.postMessage('removePopup', '*');
         });
         
-        // Close when clicking overlay background
+        // Close on background click
         overlay.addEventListener('click', function(e) {
             if (e.target === overlay) {
                 localStorage.setItem(STORAGE_KEY, new Date().toDateString());
                 overlay.classList.add('hidden');
+                window.parent.postMessage('removePopup', '*');
             }
         });
     </script>
